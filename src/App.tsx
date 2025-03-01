@@ -4,7 +4,7 @@ import Subcategories from './component/Subcategories';
 import Products from './component/Products';
 
 const client = new ApolloClient({
-  uri: "http://localhost:4000/graphql", // Update with your backend URL
+  uri: "https://backend-1-dboj.onrender.com/graphql",  // Replace localhost with the Render URL
   cache: new InMemoryCache(),
 });
 function App() {
