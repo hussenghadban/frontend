@@ -137,7 +137,7 @@ const Products = () => {
 
         {/* Subcategory Dropdown */}
         <select value={subcategoryId} onChange={(e) => setSubcategoryId(e.target.value)}>
-          <option value="">Select Subcategory (Optional)</option>
+          <option value="">Select Subcategory </option>
           {subcategoriesData?.getSubcategories.map((sub: any) => (
             <option key={sub.id} value={sub.id}>
               {sub.name}
