@@ -7,7 +7,7 @@ const client = new ApolloClient({
   uri: "https://backend-1-dboj.onrender.com/graphql",  // Replace localhost with the Render URL
   cache: new InMemoryCache(),
 });
-function App() {
+function App() {  
 
   return (
     <ApolloProvider client={client}>
