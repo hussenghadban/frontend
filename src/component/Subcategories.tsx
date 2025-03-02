@@ -1,6 +1,11 @@
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { useState } from "react";
 
+interface Subcategory{
+  id: string;
+  name: string;
+  description: string;
+}
 const GET_SUBCATEGORIES = gql`
   query GetSubcategories {
     getSubcategories {
@@ -21,10 +26,17 @@ const ADD_SUBCATEGORY = gql`
   }
 `;
 
+const DELETE_SUBCATEGORY = gql`
+  mutation DeleteSubcategory($id: ID!) {
+    deleteSubcategory(id: $id)
+  }
+`;
+
 const Subcategories = () => {
   const { loading, error, data, refetch } = useQuery(GET_SUBCATEGORIES);
   const [addSubcategory] = useMutation(ADD_SUBCATEGORY);
-  
+  const [deleteSubcategory] = useMutation(DELETE_SUBCATEGORY);
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
@@ -34,6 +46,11 @@ const Subcategories = () => {
     refetch();
     setName("");
     setDescription("");
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteSubcategory({ variables: { id } });
+    refetch();
   };
 
   if (loading) return <p>Loading...</p>;
@@ -59,9 +76,10 @@ const Subcategories = () => {
         <button type="submit">Add Subcategory</button>
       </form>
       <ul>
-        {data.getSubcategories.map((subcategory: any) => (
+        {data.getSubcategories.map((subcategory: Subcategory) => (
           <li key={subcategory.id}>
             <strong>{subcategory.name}</strong>: {subcategory.description || "No description"}
+            <button onClick={() => handleDelete(subcategory.id)}>Delete</button>
           </li>
         ))}
       </ul>

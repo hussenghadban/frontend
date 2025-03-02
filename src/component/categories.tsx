@@ -10,11 +10,6 @@ const GET_CATEGORIES = gql`
     }
   }
 `;
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-}
 
 const ADD_CATEGORY = gql`
   mutation AddCategory($name: String!, $description: String) {
@@ -26,10 +21,23 @@ const ADD_CATEGORY = gql`
   }
 `;
 
+const DELETE_CATEGORY = gql`
+  mutation DeleteCategory($id: ID!) {
+    deleteCategory(id: $id)
+  }
+`;
+
+interface Category {
+  id: string;
+  name: string;
+  description: string;
+}
+
 const Categories = () => {
   const { loading, error, data, refetch } = useQuery(GET_CATEGORIES);
   const [addCategory] = useMutation(ADD_CATEGORY);
-  
+  const [deleteCategory] = useMutation(DELETE_CATEGORY);
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
@@ -39,6 +47,11 @@ const Categories = () => {
     refetch();
     setName("");
     setDescription("");
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteCategory({ variables: { id } });
+    refetch();
   };
 
   if (loading) return <p>Loading...</p>;
@@ -67,6 +80,7 @@ const Categories = () => {
         {data.getCategories.map((category: Category) => (
           <li key={category.id}>
             <strong>{category.name}</strong>: {category.description || "No description"}
+            <button onClick={() => handleDelete(category.id)}>Delete</button>
           </li>
         ))}
       </ul>

@@ -1,6 +1,14 @@
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { useState } from "react";
 
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: { id: string; name: string };
+  subcategory: { id: string; name: string };
+}
 const GET_PRODUCTS = gql`
   query GetProducts {
     getProducts {
@@ -51,6 +59,12 @@ const ADD_PRODUCT = gql`
   }
 `;
 
+const DELETE_PRODUCT = gql`
+  mutation DeleteProduct($id: ID!) {
+    deleteProduct(id: $id)
+  }
+`;
+
 const GET_CATEGORIES = gql`
   query GetCategories {
     getCategories {
@@ -74,6 +88,7 @@ const Products = () => {
   const { data: categoriesData } = useQuery(GET_CATEGORIES);
   const { data: subcategoriesData } = useQuery(GET_SUBCATEGORIES);
   const [addProduct] = useMutation(ADD_PRODUCT);
+  const [deleteProduct] = useMutation(DELETE_PRODUCT);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -83,13 +98,20 @@ const Products = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await addProduct({ variables: { name, description, price: parseFloat(price), categoryId, subcategoryId } });
+    await addProduct({
+      variables: { name, description, price: parseFloat(price), categoryId, subcategoryId },
+    });
     refetch();
     setName("");
     setDescription("");
     setPrice("");
     setCategoryId("");
     setSubcategoryId("");
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteProduct({ variables: { id } });
+    refetch();
   };
 
   if (loading) return <p>Loading...</p>;
@@ -102,34 +124,42 @@ const Products = () => {
         <input type="text" placeholder="Product Name" value={name} onChange={(e) => setName(e.target.value)} required />
         <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
         <input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} required />
-        
+
         {/* Category Dropdown */}
         <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required>
           <option value="">Select Category</option>
           {categoriesData?.getCategories.map((cat: any) => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
           ))}
         </select>
-        
+
         {/* Subcategory Dropdown */}
         <select value={subcategoryId} onChange={(e) => setSubcategoryId(e.target.value)}>
-          <option value="">Select Subcategory (Optional)</option>
+          <option value="">Select Subcategory </option>
           {subcategoriesData?.getSubcategories.map((sub: any) => (
-            <option key={sub.id} value={sub.id}>{sub.name}</option>
+            <option key={sub.id} value={sub.id}>
+              {sub.name}
+            </option>
           ))}
         </select>
-        
+
         <button type="submit">Add Product</button>
       </form>
 
       {/* Display Product List */}
       <ul>
-        {data.getProducts.map((product: any) => (
+        {data.getProducts.map((product: Product) => (
           <li key={product.id}>
-            <strong>{product.name}</strong>: {product.description || "No description"}, 
-            <strong> ${product.price}</strong><br />
-            <em>Category:</em> {product.category ? product.category.name : "No Category"}<br />
+            <strong>{product.name}</strong>: {product.description || "No description"},
+            <strong> ${product.price}</strong>
+            <br />
+            <em>Category:</em> {product.category ? product.category.name : "No Category"}
+            <br />
             <em>Subcategory:</em> {product.subcategory ? product.subcategory.name : "No Subcategory"}
+            <br />
+            <button onClick={() => handleDelete(product.id)}>Delete</button>
           </li>
         ))}
       </ul>
